@@ -1,0 +1,26 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #f0f2f5;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+#root {
+  height: 100vh;
+  width: 100vw;
+}
+
+/* ── tldraw CSS variable overrides (light modern theme) ── */
+.tldraw__editor {
+  --tl-background: #ffffff;
+  --tl-color-panel: #ffffff;
+  --tl-color-panel-contrast: #f8f9fa;
+  --tl-color-text: #1a1a2e;
+  --tl-color-text-3: #6b7280;
+  --tl-radius-4: 12px;
+  --tl-radius-2: 8px;
+  --tl-shadow-panel: 0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+}
