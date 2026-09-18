@@ -1,4 +1,4 @@
-# tldraw — Creative Studio Redesign
+# tldraw — Creative Studio Redesign v2
 
 A modern redesign of the [tldraw](https://tldraw.dev) canvas SDK, adding:
 
