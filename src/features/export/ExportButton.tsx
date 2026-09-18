@@ -37,13 +37,18 @@ export function ExportButton({ filename = 'tldraw-export' }: ExportButtonProps) 
         opts: { background: true },
       })
 
-      // Trigger browser download
+      // Trigger browser download. The revoke happens in `finally` so the
+      // object URL is always released, even if `anchor.click()` throws
+      // (e.g. the anchor is rejected by a content-security-policy handler).
       const url = URL.createObjectURL(blob)
-      const anchor = document.createElement('a')
-      anchor.href = url
-      anchor.download = `${filename}.png`
-      anchor.click()
-      URL.revokeObjectURL(url)
+      try {
+        const anchor = document.createElement('a')
+        anchor.href = url
+        anchor.download = `${filename}.png`
+        anchor.click()
+      } finally {
+        URL.revokeObjectURL(url)
+      }
     } catch (err) {
       console.error('[ExportButton] exportToBlob failed:', err)
       alert('Export failed — see console for details.')

@@ -19,9 +19,9 @@ const mockExportToBlob = vi.mocked(exportToBlob)
 const mockUseEditor = vi.mocked(useEditor)
 
 // Mock browser APIs
-global.URL.createObjectURL = vi.fn(() => 'blob:mock-url')
-global.URL.revokeObjectURL = vi.fn()
-global.alert = vi.fn()
+globalThis.URL.createObjectURL = vi.fn(() => 'blob:mock-url')
+globalThis.URL.revokeObjectURL = vi.fn()
+globalThis.alert = vi.fn()
 
 function makeEditor(shapeIds: string[] = ['shape-1', 'shape-2']) {
   return { getCurrentPageShapeIds: () => new Set(shapeIds) }
@@ -48,7 +48,7 @@ describe('ExportButton', () => {
     render(<ExportButton />)
     fireEvent.click(screen.getByRole('button', { name: /export canvas as png/i }))
     await waitFor(() => {
-      expect(global.alert).toHaveBeenCalledWith(
+      expect(globalThis.alert).toHaveBeenCalledWith(
         'Nothing to export — add some shapes to the canvas first.'
       )
     })
@@ -101,12 +101,66 @@ describe('ExportButton', () => {
     })
   })
 
+  it('sets the download filename to "<filename>.png" and activates the anchor', async () => {
+    mockExportToBlob.mockResolvedValue(new Blob(['data'], { type: 'image/png' }))
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+    let capturedDownload = ''
+    let capturedHref = ''
+    const originalCreateElement = document.createElement.bind(document)
+    vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+      const el = originalCreateElement(tag)
+      if (tag === 'a') {
+        Object.defineProperty(el, 'download', {
+          get: () => capturedDownload,
+          set: (v) => { capturedDownload = v },
+        })
+        Object.defineProperty(el, 'href', {
+          get: () => capturedHref,
+          set: (v) => { capturedHref = v },
+        })
+      }
+      return el
+    })
+
+    render(<ExportButton filename="my-canvas" />)
+    fireEvent.click(screen.getByRole('button', { name: /export canvas as png/i }))
+
+    await waitFor(() => {
+      expect(clickSpy).toHaveBeenCalledTimes(1)
+    })
+    expect(capturedDownload).toBe('my-canvas.png')
+    expect(capturedHref).toBe('blob:mock-url')
+
+    clickSpy.mockRestore()
+    vi.mocked(document.createElement).mockRestore()
+  })
+
+  it('still revokes the object URL if anchor.click() throws', async () => {
+    mockExportToBlob.mockResolvedValue(new Blob(['data'], { type: 'image/png' }))
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {
+      throw new Error('click blocked')
+    })
+
+    render(<ExportButton />)
+    fireEvent.click(screen.getByRole('button', { name: /export canvas as png/i }))
+
+    await waitFor(() => {
+      expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:mock-url')
+    })
+    // The click failure is a synchronous throw inside the try block, not an
+    // exportToBlob rejection, so it surfaces via the outer catch as the same
+    // failure alert rather than silently swallowing the error.
+    expect(globalThis.alert).toHaveBeenCalledWith('Export failed — see console for details.')
+
+    clickSpy.mockRestore()
+  })
+
   it('shows error alert when exportToBlob rejects', async () => {
     mockExportToBlob.mockRejectedValue(new Error('network error'))
     render(<ExportButton />)
     fireEvent.click(screen.getByRole('button', { name: /export canvas as png/i }))
     await waitFor(() => {
-      expect(global.alert).toHaveBeenCalledWith(
+      expect(globalThis.alert).toHaveBeenCalledWith(
         'Export failed — see console for details.'
       )
     })
