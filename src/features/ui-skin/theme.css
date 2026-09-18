@@ -102,6 +102,20 @@
   box-shadow: 0 1px 4px rgba(99,102,241,0.3);
 }
 
+/* ── Export button slot ──────────────────────────────────────────────────── *
+ * <ExportButton> must render inside <Tldraw> (it needs the editor context
+ * from useEditor()), but visually it belongs in the top bar next to the
+ * "3D Shapes" toggle. Fixed-position it into that spot instead of moving it
+ * in the DOM. Height 52px topbar, ~30px button → 11px top offset centers it.
+ * z-index above both the topbar (600) and tldraw's own UI so it stays
+ * clickable. */
+.cs-export-btn-slot {
+  position: fixed;
+  top: 11px;
+  right: 16px;
+  z-index: 650;
+}
+
 /* ── Toolbar wrapper (tldraw toolbar) ────────────────────────────────────── */
 .cs-toolbar-wrapper {
   position: relative;

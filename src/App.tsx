@@ -2,6 +2,7 @@ import { Tldraw, useEditor, DefaultToolbar, TldrawUiMenuItem, useTools, DefaultT
 import 'tldraw/tldraw.css'
 import './features/ui-skin/theme.css'
 import { ShapesPanel } from './features/advanced-shapes/ShapesPanel'
+import { ExportButton } from './features/export/ExportButton'
 import { useState } from 'react'
 
 // ── Toolbar override: adds "Shapes" button ──────────────────────────────────
@@ -49,14 +50,15 @@ function TopBar({ onToggleShapes, shapesOpen }: { onToggleShapes: () => void; sh
           </svg>
           3D Shapes
         </button>
-        <button className="cs-btn cs-btn-primary" aria-label="Export canvas">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-            <polyline points="7 10 12 15 17 10"/>
-            <line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
-          Export
-        </button>
+        {/*
+         * The real export control is <ExportButton>, rendered as a child of
+         * <Tldraw> further down (not here) because it needs tldraw's editor
+         * context via useEditor() — TopBar is a sibling of <Tldraw>, not a
+         * descendant, so useEditor() would throw here. It's visually docked
+         * into this slot of the top bar via the `.cs-export-btn-slot` CSS
+         * class (position: fixed), so it reads as part of the top bar even
+         * though it lives inside the tldraw tree in the DOM.
+         */}
       </div>
     </div>
   )
@@ -76,6 +78,9 @@ export default function App() {
             Toolbar: CustomToolbar,
           }}
         >
+          <div className="cs-export-btn-slot">
+            <ExportButton filename="creative-studio-export" />
+          </div>
           {shapesOpen && <ShapesPanel onClose={() => setShapesOpen(false)} />}
         </Tldraw>
       </div>
