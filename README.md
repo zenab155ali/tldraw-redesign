@@ -1,51 +1,58 @@
 # tldraw — Creative Studio Redesign
 
-A modern redesign of the [tldraw](https://tldraw.dev) canvas SDK with a new visual theme and an interactive 3D shapes library panel.
+A modern redesign of the [tldraw](https://tldraw.dev) canvas SDK adding a polished light theme, a 3D shapes library panel, and a working PNG export button.
 
-## What's new
+## Features added
 
-### 1. Modern light theme (`src/features/ui-skin/theme.css`)
-CSS variable overrides applied to the tldraw editor:
-- Toolbar: pill shape, rounded corners, elevated shadow, scale-on-hover buttons
-- Active tool: indigo/violet gradient highlight
-- Style panel: rounded corners, elevated card shadow
-- Menu and navigation panels: consistent rounded shadow treatment
-- Smooth `transition: all 0.15s ease` on all interactive elements
+### Modern light theme — `src/features/ui-skin/theme.css`
+CSS variable overrides scoped to tldraw's class selectors:
+- Toolbar: pill shape, rounded corners, shadow, scale-on-hover, active-tool gradient
+- Style panel, menu panel, navigation panel: rounded corners, elevated shadows
+- `transition: all 0.15s ease` on all interactive elements for smooth feedback
 
-### 2. 3D Shapes Library panel (`src/features/advanced-shapes/ShapesPanel.tsx`)
-A floating panel with 12 categorised shapes placed directly on the canvas via `editor.createShape()`:
+### 3D Shapes Library panel — `src/features/advanced-shapes/ShapesPanel.tsx`
+Floating panel with 12 shapes in two categories, placed on the canvas via `editor.createShape()`:
+- **3D Objects:** Cube · Card · Button · Cylinder · Isometric · Panel
+- **Decorative:** Star · Diamond · Hexagon · Badge · Speech Bubble · Arrow
 
-**3D Objects:** 3D Cube · 3D Card · 3D Button · Cylinder · Isometric · 3D Panel
+Each card shows an SVG gradient preview. Clicking places the shape at the viewport center.
 
-**Decorative:** Star · Diamond · Hexagon · Badge · Speech Bubble · Arrow
+### Working PNG export — `src/App.tsx`
+`ExportButton` is rendered inside `<Tldraw>` children so `useEditor()` resolves correctly.
+Calls `exportToBlob({ editor, ids, format: 'png' })`, triggers a browser download, and handles both empty-canvas and runtime error cases.
 
-Each shape card shows a rendered SVG preview with gradient fills. Clicking any card places the shape at the current viewport center.
-
-### 3. Working PNG export (`src/App.tsx` — `ExportButton`)
-The Export PNG button calls tldraw's `exportToBlob` API, downloads a PNG of all shapes on the current page, and handles empty-canvas and error cases gracefully.
-
-### 4. Accessible top bar
-- `aria-label` and `aria-pressed` on the 3D Shapes toggle button
-- `aria-label` on the Export button
-- All new interactive elements are keyboard accessible
+### Accessible UI
+- `aria-label` and `aria-pressed` on the shapes toggle button
+- `aria-label` and `title` on the export button
+- All interactive elements reachable by keyboard
 
 ## Run locally
 
 ```bash
 npm install
 npx vite
-# → http://localhost:5173
+# open http://localhost:5173
 ```
 
-## Project structure
+## Build
+
+```bash
+npx tsc --noEmit   # type check
+npx vite build     # production build
+```
+
+## File structure
 
 ```
 src/
-  App.tsx                              # App shell, top bar, wired Export button
+  App.tsx                                   # App shell — TopPanel, ExportButton, ShapesPanel
   features/
-    ui-skin/theme.css                  # Modern light theme CSS overrides
-    advanced-shapes/ShapesPanel.tsx    # 3D shapes library panel
+    ui-skin/theme.css                        # Modern light theme overrides
+    advanced-shapes/ShapesPanel.tsx          # 3D shapes library panel
 ```
 
-All new code is inside `src/features/` — completely separate from tldraw internals.
-Original tldraw functionality is fully preserved.
+Original tldraw functionality is fully preserved. All additions are clearly separated in `src/features/` or isolated components in `src/App.tsx`.
+
+## Screenshot
+
+![Creative Studio running with 3D shapes panel open](screenshot.png)

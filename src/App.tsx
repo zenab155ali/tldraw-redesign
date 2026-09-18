@@ -4,7 +4,8 @@ import './features/ui-skin/theme.css'
 import { ShapesPanel } from './features/advanced-shapes/ShapesPanel'
 import { useState } from 'react'
 
-// Wraps the default toolbar with a modern pill-shaped container (CSS in theme.css)
+// ── CustomToolbar ────────────────────────────────────────────────────────────
+// Wraps DefaultToolbar with a modern pill-shaped container styled in theme.css.
 function CustomToolbar() {
   return (
     <div className="cs-toolbar-wrapper">
@@ -15,9 +16,11 @@ function CustomToolbar() {
   )
 }
 
-// Export button — wired to tldraw's exportToBlob API, downloads a PNG
+// ── ExportButton ─────────────────────────────────────────────────────────────
+// Must be rendered as a child of <Tldraw> so useEditor() has access to context.
+// Calls tldraw's exportToBlob API and triggers a PNG download.
 function ExportButton() {
-  const editor = useEditor()
+  const editor = useEditor() // valid: rendered inside <Tldraw> children
 
   async function handleExport() {
     const shapeIds = [...editor.getCurrentPageShapeIds()]
@@ -40,7 +43,7 @@ function ExportButton() {
       URL.revokeObjectURL(url)
     } catch (err) {
       console.error('Export failed:', err)
-      alert('Export failed. Please try again.')
+      alert('Export failed — check the console for details.')
     }
   }
 
@@ -49,7 +52,7 @@ function ExportButton() {
       className="cs-btn cs-btn-primary"
       onClick={handleExport}
       aria-label="Export canvas as PNG"
-      title="Export canvas as PNG"
+      title="Export all shapes on current page as PNG"
     >
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
         <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
@@ -61,7 +64,10 @@ function ExportButton() {
   )
 }
 
-function TopBar({ onToggleShapes, shapesOpen }: { onToggleShapes: () => void; shapesOpen: boolean }) {
+// ── TopPanel ─────────────────────────────────────────────────────────────────
+// Rendered inside <Tldraw> children so ExportButton can use useEditor().
+// Controls the 3D shapes panel toggle and the export action.
+function TopPanel({ onToggleShapes, shapesOpen }: { onToggleShapes: () => void; shapesOpen: boolean }) {
   return (
     <div className="cs-topbar">
       <div className="cs-topbar-left">
@@ -92,19 +98,27 @@ function TopBar({ onToggleShapes, shapesOpen }: { onToggleShapes: () => void; sh
           </svg>
           3D Shapes
         </button>
+        {/* ExportButton is here — inside Tldraw children — so useEditor() works */}
         <ExportButton />
       </div>
     </div>
   )
 }
 
+// ── App ───────────────────────────────────────────────────────────────────────
+// TopPanel, ExportButton, and ShapesPanel are all rendered as children of
+// <Tldraw>, which provides the editor React context they depend on.
 export default function App() {
   const [shapesOpen, setShapesOpen] = useState(false)
+
   return (
     <div className="cs-app">
-      <TopBar onToggleShapes={() => setShapesOpen((v: boolean) => !v)} shapesOpen={shapesOpen} />
       <div className="cs-canvas-area">
         <Tldraw components={{ Toolbar: CustomToolbar }}>
+          <TopPanel
+            onToggleShapes={() => setShapesOpen((v: boolean) => !v)}
+            shapesOpen={shapesOpen}
+          />
           {shapesOpen && <ShapesPanel onClose={() => setShapesOpen(false)} />}
         </Tldraw>
       </div>
